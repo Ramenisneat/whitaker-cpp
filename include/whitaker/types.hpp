@@ -1,13 +1,12 @@
 #pragma once
 
-#include <enums.hpp>
+#include <whitaker/enums.hpp>
 #include <array>
 #include <string>
 #include <cstdint>
+#include <iosfwd>
 
 // https://mk270.github.io/whitakers-words/user_modifications.html
-// https://mk270.github.io/whitakers-words/user_modifications.html
-
 namespace words{
 
 struct NounType{
@@ -32,11 +31,18 @@ struct PronounType{
 };
 
 
-//TODO
 struct NumeralType{
     uint8_t decl = 0;
     uint8_t var = 0;
+    NumeralSort sort = NumeralSort::UNKNOWN;
+    uint8_t value = 0;
 
+};
+
+struct PackType{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    PronounKind kind = PronounKind::UNKNOWN;
 };
 
 
@@ -69,7 +75,8 @@ struct DictEntry{
     std::array<std::string, 4> stems;
 
     PartOfSpeech pos = PartOfSpeech::UNKNOWN;
-    union{
+
+    union Type {
         NounType noun;
         VerbType verb;
         PronounType pronoun;
@@ -77,14 +84,21 @@ struct DictEntry{
         AdjectiveType adjective;
         AdverbType adverb;
         PrepositionType preposition;
+        PackType packon;
+        std::uint8_t raw;
+        constexpr Type() : raw(0) {}
     };
 
-    //Translation 
+    Type type{};
+
+    //Translation
     //Meaning
     //TODO: WILL ENUMERATE o7
     std::string rest;
 
 
 };
+
+std::ostream& operator<<(std::ostream& os, const DictEntry& entry);
 
 }
