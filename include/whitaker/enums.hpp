@@ -128,13 +128,13 @@ namespace words{
 
     //ADVERBS and ADJECTIVES
     enum class Comparison{
-        UNKNOWN, POSITIVE, COMPARITIVE, SUPERLATIVE
+        UNKNOWN, POSITIVE, COMPARATIVE, SUPERLATIVE
     };
 
     inline constexpr EnumEntry<Comparison> comparison_table[] = {
         {"X",     Comparison::UNKNOWN},
         {"POS",   Comparison::POSITIVE},
-        {"COMP",  Comparison::COMPARITIVE},
+        {"COMP",  Comparison::COMPARATIVE},
         {"SUPER", Comparison::SUPERLATIVE},
     };
 

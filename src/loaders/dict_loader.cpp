@@ -202,7 +202,7 @@ namespace words{
     }
 
 
-    void buildStemRef(DictEntry &entry, std::vector<StemRef> &stemList, size_t &idx){
+    void buildStemRef(DictEntry &entry, std::vector<StemRef> &stemList, size_t idx){
 
         //principal stems are 1 based, because 0 can appear as a wildcard
         if (entry.pos == PartOfSpeech::NOUN && entry.stems[0] == entry.stems[1] && entry.stems[0] != "zzz" && !entry.stems[0].empty()){
@@ -219,13 +219,13 @@ namespace words{
                 stemList.push_back((StemRef){entry.stems[3], idx, 4});
             }
         }
-        else if (entry.pos == PartOfSpeech::ADJECTIVE && entry.type.adjective.param == Comparison::COMPARITIVE){
+        else if (entry.pos == PartOfSpeech::ADJECTIVE && entry.type.adjective.param == Comparison::COMPARATIVE){
             stemList.push_back((StemRef){entry.stems[0], idx, 3});
         }
         else if (entry.pos == PartOfSpeech::ADJECTIVE && entry.type.adjective.param == Comparison::SUPERLATIVE){
             stemList.push_back((StemRef){entry.stems[0], idx, 4});
         }
-        else if (entry.pos == PartOfSpeech::ADVERB && entry.type.adverb.param == Comparison::COMPARITIVE){
+        else if (entry.pos == PartOfSpeech::ADVERB && entry.type.adverb.param == Comparison::COMPARATIVE){
             stemList.push_back((StemRef){entry.stems[0], idx, 2});
         }
         else if (entry.pos == PartOfSpeech::ADVERB && entry.type.adverb.param == Comparison::SUPERLATIVE){
@@ -253,8 +253,8 @@ namespace words{
             stemList.push_back((StemRef){entry.stems[0], idx, 4});
         }
         else{
-            for (size_t i = 0 ; i < 4; ++i){
-                if (!entry.stems[i].empty() && entry.stems[i] == "zzz")
+            for (uint8_t i = 0 ; i < 4; ++i){
+                if (!entry.stems[i].empty() && entry.stems[i] != "zzz")
                     stemList.push_back((StemRef){entry.stems[i], idx, i+1});
             }
         }
