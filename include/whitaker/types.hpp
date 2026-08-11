@@ -91,10 +91,14 @@ struct DictEntry{
 
     Type type{};
 
-    //Translation
-    //Meaning
-    //TODO: WILL ENUMERATE o7
-    std::string rest;
+    struct Flags {
+        Age age = Age::UNKNOWN;
+        Area area = Area::UNKNOWN;
+        Geography geo = Geography::UNKNOWN;
+        Frequency freq = Frequency::UNKNOWN;
+        Source source = Source::UNKNOWN;
+    } flags;
+    std::string meaning;
 
 
 };

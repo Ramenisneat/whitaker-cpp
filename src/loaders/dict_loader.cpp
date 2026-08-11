@@ -151,12 +151,9 @@ namespace words{
                 entry.type.packon.kind = parse_enum<PronounKind>(split_type[2]);
                 break;
 
-            
-
             case PartOfSpeech::INTERJECTION:
             case PartOfSpeech::CONJUNCTION:
                 break;
-
             
             
             default:
@@ -167,11 +164,43 @@ namespace words{
 
         //FLAGS
         auto flags_raw = trim(line.substr(FLAGS_START, MEANINGS_START-FLAGS_START));
-        // std::cout << flags_raw << " ";
+        // std::cout << flags_raw << std::endl;
+
+        std::string_view split_flags[5] = {};
+        index = 0;
+        start = 0;
+
+        while (index < std::size(split_flags)) {
+            while (start < flags_raw.size() && flags_raw[start] == ' ') start++;
+            if (start >= flags_raw.size()) break;
+
+            size_t end = flags_raw.find(" ", start);
+            if (end == std::string_view::npos) end = flags_raw.size();
+
+            split_flags[index++] = flags_raw.substr(start, end - start);
+            start = end;
+        }
+
+
+        //  std::cout << "[";
+        // for (int i = 0; i < 5; i++) {
+        //     std::cout << split_flags[i];
+        //     if (i < 5 - 1) {
+        //         std::cout << ", ";
+        //     }
+        // }
+        // std::cout << "]" << std::endl;
+
+
+        entry.flags.age = parse_enum<Age>(split_flags[0]);
+        entry.flags.area = parse_enum<Area>(split_flags[1]);
+        entry.flags.geo = parse_enum<Geography>(split_flags[2]);
+        entry.flags.freq = parse_enum<Frequency>(split_flags[3]);
+        entry.flags.source = parse_enum<Source>(split_flags[4]);
 
         //MEANING
         auto meaning_raw = trim(line.substr(MEANINGS_START));
-        entry.rest = std::string(meaning_raw);
+        entry.meaning = std::string(meaning_raw);
 
 
 
@@ -269,6 +298,12 @@ namespace words{
             default:
                 break;
         }
+
+        os << " age=" << enum_name(entry.flags.age)
+           << " area=" << enum_name(entry.flags.area)
+           << " geo=" << enum_name(entry.flags.geo)
+           << " freq=" << enum_name(entry.flags.freq)
+           << " source=" << enum_name(entry.flags.source);
 
         // if (!entry.rest.empty()) os << " -- " << entry.rest;
 
