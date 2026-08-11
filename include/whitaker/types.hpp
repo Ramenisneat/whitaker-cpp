@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdint>
 #include <iosfwd>
+#include <vector>
 
 // https://mk270.github.io/whitakers-words/user_modifications.html
 namespace words{
@@ -103,6 +104,19 @@ struct DictEntry{
 
 };
 
+
+//May have to add type param
+struct StemRef{
+    std::string stem;
+    size_t idx;
+    size_t prin;
+
+};
+
 std::ostream& operator<<(std::ostream& os, const DictEntry& entry);
+std::ostream& operator<<(std::ostream& os, const StemRef& ref);
+
+void printDictionary(std::ostream& os, const std::vector<DictEntry>& entries);
+void printStemList(std::ostream& os, const std::vector<StemRef>& stemList);
 
 }

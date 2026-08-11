@@ -6,6 +6,6 @@
 
 namespace words{
 
-    std::vector<DictEntry> loadDictionary(std::string fileName);
+    std::vector<DictEntry> loadDictionary(std::string &fileName, std::vector<DictEntry> entries, std::vector<StemRef> &stemList);
 
 }

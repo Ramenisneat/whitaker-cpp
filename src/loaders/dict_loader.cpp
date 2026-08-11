@@ -61,9 +61,6 @@ namespace words{
     std::string_view trim(std::string_view s) { return rtrim(ltrim(s)); }
 
     void parseLine(std::string_view line, DictEntry &entry){
-        
-
-        
 
         //STEMS
         for (size_t i = 0; i < NUM_STEMS; i++){
@@ -202,18 +199,73 @@ namespace words{
         auto meaning_raw = trim(line.substr(MEANINGS_START));
         entry.meaning = std::string(meaning_raw);
 
+    }
 
 
+    void buildStemRef(DictEntry &entry, std::vector<StemRef> &stemList, size_t &idx){
 
-        // std::cout << entry << std::endl;
+        //principal stems are 1 based, because 0 can appear as a wildcard
+        if (entry.pos == PartOfSpeech::NOUN && entry.stems[0] == entry.stems[1] && entry.stems[0] != "zzz" && !entry.stems[0].empty()){
+            stemList.push_back((StemRef){entry.stems[0], idx, 0});
+        }
+        else if (entry.pos == PartOfSpeech::ADJECTIVE && entry.stems[0] == entry.stems[1] && entry.stems[0] != "zzz" && !entry.stems[0].empty()){
+            stemList.push_back((StemRef){entry.stems[0], idx, 0});
+            if (!entry.stems[2].empty() && entry.stems[2] != "zzz"){
+                stemList.push_back((StemRef){entry.stems[2], idx, 3});
+                
 
+            }
+            if (!entry.stems[3].empty() && entry.stems[3] != "zzz"){
+                stemList.push_back((StemRef){entry.stems[3], idx, 4});
+            }
+        }
+        else if (entry.pos == PartOfSpeech::ADJECTIVE && entry.type.adjective.param == Comparison::COMPARITIVE){
+            stemList.push_back((StemRef){entry.stems[0], idx, 3});
+        }
+        else if (entry.pos == PartOfSpeech::ADJECTIVE && entry.type.adjective.param == Comparison::SUPERLATIVE){
+            stemList.push_back((StemRef){entry.stems[0], idx, 4});
+        }
+        else if (entry.pos == PartOfSpeech::ADVERB && entry.type.adverb.param == Comparison::COMPARITIVE){
+            stemList.push_back((StemRef){entry.stems[0], idx, 2});
+        }
+        else if (entry.pos == PartOfSpeech::ADVERB && entry.type.adverb.param == Comparison::SUPERLATIVE){
+            stemList.push_back((StemRef){entry.stems[0], idx, 3});
+        }
+        else if (entry.pos == PartOfSpeech::VERB && entry.stems[0] == entry.stems[1] && entry.stems[0] != "zzz" && !entry.stems[0].empty()){
+            stemList.push_back((StemRef){entry.stems[0], idx, 0});
+            if (!entry.stems[2].empty() && entry.stems[2] != "zzz"){
+                stemList.push_back((StemRef){entry.stems[2], idx, 3});
+            }
+            if (!entry.stems[3].empty() && entry.stems[3] != "zzz"){
+                stemList.push_back((StemRef){entry.stems[3], idx, 4});
+            }
+        }
+        else if (entry.pos == PartOfSpeech::NUMERAL && entry.type.numeral.sort == NumeralSort::CARDINAL){
+            stemList.push_back((StemRef){entry.stems[0], idx, 1});
+        }
+        else if (entry.pos == PartOfSpeech::NUMERAL && entry.type.numeral.sort == NumeralSort::ORDINAL){
+            stemList.push_back((StemRef){entry.stems[0], idx, 2});
+        }
+        else if (entry.pos == PartOfSpeech::NUMERAL && entry.type.numeral.sort == NumeralSort::DISTRIBUTIVE){
+            stemList.push_back((StemRef){entry.stems[0], idx, 3});
+        }
+        else if (entry.pos == PartOfSpeech::NUMERAL && entry.type.numeral.sort == NumeralSort::ADVERB){
+            stemList.push_back((StemRef){entry.stems[0], idx, 4});
+        }
+        else{
+            for (size_t i = 0 ; i < 4; ++i){
+                if (!entry.stems[i].empty() && entry.stems[i] == "zzz")
+                    stemList.push_back((StemRef){entry.stems[i], idx, i+1});
+            }
+        }
 
     }
 
-    std::vector<DictEntry> loadDictionary(std::string fileName){
+
+    std::vector<DictEntry> loadDictionary(std::string &fileName, std::vector<DictEntry> entries, std::vector<StemRef> &stemList){
         
         std::ifstream file(fileName);
-        std::vector<DictEntry> entries;
+        // std::vector<DictEntry> entries;
 
         if (!file.is_open()){
             std::cerr << "ERROR: FILE COULD NOT BE OPENED" << std::endl;
@@ -223,10 +275,19 @@ namespace words{
         std::string line;
         DictEntry entry;
 
+        size_t idx = 0;
+
         while (std::getline(file, line)){
             // std::cout << line << std::endl;
             //error handling
             parseLine(line, entry);
+            entries.push_back(entry);
+            //TODO, build stemList
+            buildStemRef(entry, stemList, idx);
+            ++idx;
+
+            //Theres a case where if the dictionary kind is general it constructs and ESSE? See lines 282 https://github.com/mk270/whitakers-words/blob/master/src/commands/makedict_main.adb
+
         }
 
         file.close();
@@ -308,6 +369,23 @@ namespace words{
         // if (!entry.rest.empty()) os << " -- " << entry.rest;
 
         return os;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const StemRef& ref){
+        os << "\"" << ref.stem << "\" (idx=" << ref.idx << ", prin=" << ref.prin << ")";
+        return os;
+    }
+
+    void printDictionary(std::ostream& os, const std::vector<DictEntry>& entries){
+        for (size_t i = 0; i < entries.size(); ++i){
+            os << "[" << i << "] " << entries[i] << "\n";
+        }
+    }
+
+    void printStemList(std::ostream& os, const std::vector<StemRef>& stemList){
+        for (const auto& ref : stemList){
+            os << ref << "\n";
+        }
     }
 
 }
