@@ -1,10 +1,9 @@
 #include <whitaker/enums.hpp>
 #include <whitaker/types.hpp>
-#include <string>
+#include <whitaker/utils.hpp>
 #include <fstream>
 #include <vector>
 #include <iostream>
-#include <charconv>
 
 
 
@@ -19,48 +18,10 @@ namespace words{
     constexpr size_t MEANINGS_START = 110;
 
 
-    //Taken from https://mobiarch.wordpress.com/2022/12/12/string-to-number-conversion-in-modern-c/
-    template <typename T>
-    bool vtonum(const std::string_view &view, T& value) {
-        if (view.empty()) {
-            return false;
-        }
-        
-        const char* first = view.data();
-        const char* last = view.data() + view.length();
-        
-        std::from_chars_result res = std::from_chars(first, last, value);
-        
-        if (res.ec != std::errc()) {
-            return false;
-        }
-        
-        if (res.ptr != last) {
-            return false;
-        }
-        
-        return true;
-    }
-
-
-    //AI SLOP
-    std::string_view rtrim(std::string_view s) {
-        while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r')) {
-            s.remove_suffix(1);
-        }
-        return s;
-    }
-
-    std::string_view ltrim(std::string_view s) {
-        while (!s.empty() && (s.front() == ' ' || s.front() == '\t')) {
-            s.remove_prefix(1);
-        }
-        return s;
-    }
-
-    std::string_view trim(std::string_view s) { return rtrim(ltrim(s)); }
+    
 
     void parseLine(std::string_view line, DictEntry &entry){
+        //Damn could use the wdith agnostic tokenize now instead of the fixed width tokenizing. bruh. idk
 
         //STEMS
         for (size_t i = 0; i < NUM_STEMS; i++){
@@ -79,20 +40,8 @@ namespace words{
         auto type_raw = trim(line.substr(TYPE_START, FLAGS_START-TYPE_START));
 
         //split params into array for easy parsing
-        std::string_view split_type[4] = {};
-        size_t index = 0;
-        size_t start = 0;
-
-        while (index < std::size(split_type)) {
-            while (start < type_raw.size() && type_raw[start] == ' ') start++;
-            if (start >= type_raw.size()) break;
-
-            size_t end = type_raw.find(" ", start);
-            if (end == std::string_view::npos) end = type_raw.size();
-
-            split_type[index++] = type_raw.substr(start, end - start);
-            start = end;
-        }
+        auto split_type = tokenize_sv(type_raw, 4);
+        
 
         // std::cout << "[ ";
         // for (const auto& s : split_type) std::cout << "\"" << s << "\" ";
@@ -143,9 +92,9 @@ namespace words{
 
 
             case PartOfSpeech::PACKON:
-                vtonum(split_type[0], entry.type.packon.decl);
-                vtonum(split_type[1], entry.type.packon.var);
-                entry.type.packon.kind = parse_enum<PronounKind>(split_type[2]);
+                vtonum(split_type[0], entry.type.propack.decl);
+                vtonum(split_type[1], entry.type.propack.var);
+                entry.type.propack.kind = parse_enum<PronounKind>(split_type[2]);
                 break;
 
             case PartOfSpeech::INTERJECTION:
@@ -157,26 +106,13 @@ namespace words{
                 std::cerr << "NOT YET IMPLEMENTED POS: " << POS_raw << std::endl;
                 break;
         }
-        // std::cout << type_raw << " ";
 
         //FLAGS
         auto flags_raw = trim(line.substr(FLAGS_START, MEANINGS_START-FLAGS_START));
         // std::cout << flags_raw << std::endl;
 
-        std::string_view split_flags[5] = {};
-        index = 0;
-        start = 0;
+        auto split_flags = tokenize_sv(flags_raw, 5);
 
-        while (index < std::size(split_flags)) {
-            while (start < flags_raw.size() && flags_raw[start] == ' ') start++;
-            if (start >= flags_raw.size()) break;
-
-            size_t end = flags_raw.find(" ", start);
-            if (end == std::string_view::npos) end = flags_raw.size();
-
-            split_flags[index++] = flags_raw.substr(start, end - start);
-            start = end;
-        }
 
 
         //  std::cout << "[";
@@ -253,7 +189,7 @@ namespace words{
             stemList.push_back((StemRef){entry.stems[0], idx, 4});
         }
         else{
-            for (uint8_t i = 0 ; i < 4; ++i){
+            for (size_t i = 0 ; i < 4; ++i){
                 if (!entry.stems[i].empty() && entry.stems[i] != "zzz")
                     stemList.push_back((StemRef){entry.stems[i], idx, i+1});
             }
@@ -262,14 +198,14 @@ namespace words{
     }
 
 
-    std::vector<DictEntry> loadDictionary(std::string &fileName, std::vector<DictEntry> entries, std::vector<StemRef> &stemList){
+    void loadDictionary(std::string &fileName, std::vector<DictEntry> &entries, std::vector<StemRef> &stemList){
         
         std::ifstream file(fileName);
         // std::vector<DictEntry> entries;
 
         if (!file.is_open()){
             std::cerr << "ERROR: FILE COULD NOT BE OPENED" << std::endl;
-            return entries;
+            return;
         }
 
         std::string line;
@@ -285,14 +221,13 @@ namespace words{
             //TODO, build stemList
             buildStemRef(entry, stemList, idx);
             ++idx;
-
             //Theres a case where if the dictionary kind is general it constructs and ESSE? See lines 282 https://github.com/mk270/whitakers-words/blob/master/src/commands/makedict_main.adb
 
         }
 
         file.close();
 
-        return entries;
+        return;
 
     }
 
@@ -351,9 +286,9 @@ namespace words{
                 break;
 
             case PartOfSpeech::PACKON:
-                os << "decl=" << +entry.type.packon.decl
-                   << " var=" << +entry.type.packon.var
-                   << " kind=" << enum_name(entry.type.packon.kind);
+                os << "decl=" << +entry.type.propack.decl
+                   << " var=" << +entry.type.propack.var
+                   << " kind=" << enum_name(entry.type.propack.kind);
                 break;
 
             default:

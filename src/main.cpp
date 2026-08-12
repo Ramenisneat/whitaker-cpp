@@ -11,15 +11,19 @@ int main(){
 
     vector<DictEntry> dictionary = {};
     vector<StemRef> stemList = {};
-    string fileName = "data/DICTLINE.GEN";
+    vector<InflEntry> inflections = {};
+    string dictfileName = "data/DICTLINE.GEN";
+    string inflfileName = "data/INFLECTS.LAT";
 
-    dictionary = loadDictionary(fileName, dictionary, stemList);
+
+    loadDictionary(dictfileName, dictionary, stemList);
+    loadInflections(inflfileName, inflections);
 
     cout << "Loaded " << dictionary.size() << " entries" << endl;
     cout << "Built " << stemList.size() << " stem refs" << endl;
 
-    printDictionary(cout, dictionary);
-    printStemList(cout, stemList);
+    // printDictionary(cout, dictionary);
+    // printStemList(cout, stemList);
 
     return 0;
 }

@@ -10,21 +10,21 @@
 // https://mk270.github.io/whitakers-words/user_modifications.html
 namespace words{
 
-struct NounType{
+struct NounEntry{
     uint8_t decl = 0;
     uint8_t var = 0;
     Gender gender = Gender::UNKNOWN;
     NounKind kind = NounKind::UNKNOWN;
 };
 
-struct VerbType{
+struct VerbEntry{
     uint8_t decl = 0;
     uint8_t var = 0;
     VerbKind kind = VerbKind::UNKNOWN;
 
 };
 
-struct PronounType{
+struct PronounEntry{
     uint8_t decl = 0;
     uint8_t var = 0;
     PronounKind kind = PronounKind::UNKNOWN;
@@ -32,7 +32,7 @@ struct PronounType{
 };
 
 
-struct NumeralType{
+struct NumeralEntry{
     uint8_t decl = 0;
     uint8_t var = 0;
     NumeralSort sort = NumeralSort::UNKNOWN;
@@ -40,25 +40,25 @@ struct NumeralType{
 
 };
 
-struct PackType{
+struct PropackEntry{
     uint8_t decl = 0;
     uint8_t var = 0;
     PronounKind kind = PronounKind::UNKNOWN;
 };
 
 
-struct AdjectiveType{
+struct AdjectiveEntry{
     uint8_t decl = 0;
     uint8_t var = 0;
     Comparison param = Comparison::UNKNOWN;
 };
 
-struct AdverbType{
+struct AdverbEntry{
     Comparison param = Comparison::UNKNOWN;
 };
 
 
-struct PrepositionType{
+struct PrepositionEntry{
     Case case_ = Case::UNKNOWN;
     
 };
@@ -78,14 +78,14 @@ struct DictEntry{
     PartOfSpeech pos = PartOfSpeech::UNKNOWN;
 
     union Type {
-        NounType noun;
-        VerbType verb;
-        PronounType pronoun;
-        NumeralType numeral;
-        AdjectiveType adjective;
-        AdverbType adverb;
-        PrepositionType preposition;
-        PackType packon;
+        NounEntry noun;
+        VerbEntry verb;
+        PronounEntry pronoun;
+        NumeralEntry numeral;
+        AdjectiveEntry adjective;
+        AdverbEntry adverb;
+        PrepositionEntry preposition;
+        PropackEntry propack;
         std::uint8_t raw;
         constexpr Type() : raw(0) {}
     };
@@ -110,6 +110,133 @@ struct StemRef{
     std::string stem;
     size_t idx;
     size_t prin;
+
+};
+
+
+//INFLECTIONS
+//Can collapse some of these records
+struct NounRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
+
+};
+
+struct PronounRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
+
+};
+
+struct PropackRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
+
+};
+
+struct AdjectiveRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
+    Comparison param = Comparison::UNKNOWN;
+
+};
+
+
+struct NumeralRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    NumeralSort sort = NumeralSort::UNKNOWN;
+
+};
+
+struct AdverbRecord{
+    Comparison param = Comparison::UNKNOWN;
+};
+
+
+struct TVM{
+        Tense tense = Tense::UNKNOWN;
+        Voice voice = Voice::UNKNOWN;
+        Mood mood = Mood::UNKNOWN;
+};
+
+struct VerbRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    TVM tvm;
+    uint8_t person = 0; // 0..3
+    Number number = Number::UNKNOWN;
+};
+
+struct VparRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
+    TVM tvm;
+
+};
+
+struct SupineRecord{
+    uint8_t decl = 0;
+    uint8_t var = 0;
+    Case case_ = Case::UNKNOWN;
+    Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
+};
+
+struct PrepositionRecord{
+    Case case_ = Case::UNKNOWN;
+};
+
+//Rest are null records no need;
+
+struct InflEntry{
+
+    PartOfSpeech pos = PartOfSpeech::UNKNOWN;
+
+    union Quality {
+        NounRecord noun;
+        PronounRecord pronoun;
+        PropackRecord propack;
+        AdjectiveRecord adjective;
+        NumeralRecord numeral;
+        AdverbRecord adverb;
+        VerbRecord verb;
+        VparRecord vpar;
+        SupineRecord supine;
+        PrepositionRecord preposition;
+        std::uint8_t raw;
+        constexpr Quality() : raw(0) {}
+    };
+
+    Quality quality{};
+
+    size_t stemKey = 0;
+
+    struct Ending {
+        size_t ending_size = 0; //Max is 7 (line 810 in https://github.com/mk270/whitakers-words/blob/master/src/latin_utils/latin_utils-inflections_package.ads)
+        std::string ending;
+    } ending;
+
+    Age age = Age::UNKNOWN;
+    Frequency freq = Frequency::UNKNOWN;
+
 
 };
 
