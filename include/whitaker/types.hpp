@@ -159,6 +159,7 @@ struct NumeralRecord{
     uint8_t var = 0;
     Case case_ = Case::UNKNOWN;
     Number number = Number::UNKNOWN;
+    Gender gender = Gender::UNKNOWN;
     NumeralSort sort = NumeralSort::UNKNOWN;
 
 };
@@ -241,6 +242,7 @@ struct InflEntry{
 };
 
 std::ostream& operator<<(std::ostream& os, const DictEntry& entry);
+std::ostream& operator<<(std::ostream& os, const InflEntry& entry);
 std::ostream& operator<<(std::ostream& os, const StemRef& ref);
 
 void printDictionary(std::ostream& os, const std::vector<DictEntry>& entries);

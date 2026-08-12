@@ -21,8 +21,8 @@ namespace words{
     
 
     void parseLine(std::string_view line, DictEntry &entry){
-        //Damn could use the wdith agnostic tokenize now instead of the fixed width tokenizing. bruh. idk
 
+        //Damn could use the wdith agnostic tokenize now instead of the fixed width tokenizing 
         //STEMS
         for (size_t i = 0; i < NUM_STEMS; i++){
             auto stem = trim(line.substr(i * STEM_WIDTH, STEM_WIDTH));
@@ -218,7 +218,8 @@ namespace words{
             //error handling
             parseLine(line, entry);
             entries.push_back(entry);
-            //TODO, build stemList
+
+            //TODO: I should probably sort this 
             buildStemRef(entry, stemList, idx);
             ++idx;
             //Theres a case where if the dictionary kind is general it constructs and ESSE? See lines 282 https://github.com/mk270/whitakers-words/blob/master/src/commands/makedict_main.adb

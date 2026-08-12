@@ -20,10 +20,12 @@ namespace words{
         //     std::cout << i << ","; 
         // }
         // std::cout << "]" << std::endl;
+        // std::cout << tokens.size()<< std::endl;
+
 
         entry.pos = parse_enum<PartOfSpeech>(tokens[0]);
 
-
+        size_t skip = 1;
         switch (entry.pos)
         {
 
@@ -34,6 +36,7 @@ namespace words{
             entry.quality.noun.case_ = parse_enum<Case>(tokens[3]);
             entry.quality.noun.number = parse_enum<Number>(tokens[4]);
             entry.quality.noun.gender = parse_enum<Gender>(tokens[5]);
+            skip += 5;
             break;
 
         case PartOfSpeech::PRONOUN:
@@ -42,6 +45,7 @@ namespace words{
             entry.quality.pronoun.case_ = parse_enum<Case>(tokens[3]);
             entry.quality.pronoun.number = parse_enum<Number>(tokens[4]);
             entry.quality.pronoun.gender = parse_enum<Gender>(tokens[5]);
+            skip += 5;
             break;
         
         case PartOfSpeech::PACKON:
@@ -50,6 +54,7 @@ namespace words{
             entry.quality.propack.case_ = parse_enum<Case>(tokens[3]);
             entry.quality.propack.number = parse_enum<Number>(tokens[4]);
             entry.quality.propack.gender = parse_enum<Gender>(tokens[5]);
+            skip += 5;
             break;
 
         case PartOfSpeech::ADJECTIVE:
@@ -59,6 +64,7 @@ namespace words{
             entry.quality.adjective.number = parse_enum<Number>(tokens[4]);
             entry.quality.adjective.gender = parse_enum<Gender>(tokens[5]);
             entry.quality.adjective.param = parse_enum<Comparison>(tokens[6]);
+            skip += 6;
             break;
         
         case PartOfSpeech::NUMERAL:
@@ -66,12 +72,16 @@ namespace words{
             vtonum(tokens[2], entry.quality.numeral.var);
             entry.quality.numeral.case_ = parse_enum<Case>(tokens[3]);
             entry.quality.numeral.number = parse_enum<Number>(tokens[4]);
-            entry.quality.numeral.sort = parse_enum<NumeralSort>(tokens[5]);
+            entry.quality.numeral.gender = parse_enum<Gender>(tokens[5]);
+            entry.quality.numeral.sort = parse_enum<NumeralSort>(tokens[6]);
+            skip += 6;
             break;
         
         case PartOfSpeech::ADVERB:
             entry.quality.adverb.param = parse_enum<Comparison>(tokens[1]);
-        
+            skip += 1;
+            break;
+
         case PartOfSpeech::VERB:
             vtonum(tokens[1], entry.quality.verb.decl);
             vtonum(tokens[2], entry.quality.verb.var);
@@ -80,26 +90,63 @@ namespace words{
             entry.quality.verb.tvm.mood = parse_enum<Mood>(tokens[5]);
             vtonum(tokens[6], entry.quality.verb.person); //Can error check here?
             entry.quality.verb.number = parse_enum<Number>(tokens[7]);
+            skip += 7;
             break;
         
         case PartOfSpeech::VPARTICIPLE:
+            vtonum(tokens[1], entry.quality.vpar.decl);
+            vtonum(tokens[2], entry.quality.vpar.var);            
+            entry.quality.vpar.case_ = parse_enum<Case>(tokens[3]);
+            entry.quality.vpar.number = parse_enum<Number>(tokens[4]);
+            entry.quality.vpar.gender = parse_enum<Gender>(tokens[5]);
+            entry.quality.vpar.tvm.tense = parse_enum<Tense>(tokens[6]);
+            entry.quality.vpar.tvm.voice = parse_enum<Voice>(tokens[7]);
+            entry.quality.vpar.tvm.mood = parse_enum<Mood>(tokens[8]);
+            skip += 8;
+            break;
+
+        case PartOfSpeech::SUPINE:
+            vtonum(tokens[1], entry.quality.supine.decl);
+            vtonum(tokens[2], entry.quality.supine.var);
+            entry.quality.supine.case_ = parse_enum<Case>(tokens[3]);
+            entry.quality.supine.number = parse_enum<Number>(tokens[4]);
+            entry.quality.supine.gender = parse_enum<Gender>(tokens[5]);
+            skip += 5;
+            break;
         
+        case PartOfSpeech::PREPOSITION:
+            entry.quality.preposition.case_ = parse_enum<Case>(tokens[1]);
+            skip += 1;
+            break;
 
+        case PartOfSpeech::CONJUNCTION:
+        case PartOfSpeech::INTERJECTION:
+            break;
 
-
-
-        
-        
         
         default:
             std::cerr << "NOT YET IMPLEMENTED POS: " << tokens[0] << std::endl;
             break;
         }
 
+        //stem key
+        vtonum(tokens[skip++], entry.stemKey);
 
+        //ending
+        vtonum(tokens[skip++], entry.ending.ending_size);
+        if (entry.ending.ending_size == 0)
+            entry.ending.ending = "";
+        else
+            entry.ending.ending = tokens[skip++];
+
+        //flags
+        entry.age = parse_enum<Age>(tokens[skip++]);
+        entry.freq = parse_enum<Frequency>(tokens[skip]);
 
         return;
     }
+
+
 
     void loadInflections(std::string &fileName, std::vector<InflEntry> &inflections){
         std::ifstream file(fileName);
@@ -114,7 +161,6 @@ namespace words{
         InflEntry infl;
 
 
-        size_t idx = 0;
 
         while (std::getline(file, line)){
             if (line.empty() || line[0] == '-' || line[0] == ' ' || line[0] == '\r') 
@@ -124,9 +170,8 @@ namespace words{
             // std::cout << line << std::endl;
 
             parseLine(line, infl);
+            std::cout << infl << std::endl;
             inflections.push_back(infl);
-            ++idx;
-            //Theres a case where if the dictionary kind is general it constructs and ESSE? See lines 282 https://github.com/mk270/whitakers-words/blob/master/src/commands/makedict_main.adb
 
         }
 
@@ -134,6 +179,102 @@ namespace words{
 
         return;
 
+    }
+
+
+    std::ostream& operator<<(std::ostream& os, const InflEntry& entry){
+        os << "(" << enum_name(entry.pos) << ") ";
+
+        switch (entry.pos)
+        {
+            case PartOfSpeech::NOUN:
+                os << "decl=" << +entry.quality.noun.decl
+                   << " var=" << +entry.quality.noun.var
+                   << " case=" << enum_name(entry.quality.noun.case_)
+                   << " number=" << enum_name(entry.quality.noun.number)
+                   << " gender=" << enum_name(entry.quality.noun.gender);
+                break;
+
+            case PartOfSpeech::PRONOUN:
+                os << "decl=" << +entry.quality.pronoun.decl
+                   << " var=" << +entry.quality.pronoun.var
+                   << " case=" << enum_name(entry.quality.pronoun.case_)
+                   << " number=" << enum_name(entry.quality.pronoun.number)
+                   << " gender=" << enum_name(entry.quality.pronoun.gender);
+                break;
+
+            case PartOfSpeech::PACKON:
+                os << "decl=" << +entry.quality.propack.decl
+                   << " var=" << +entry.quality.propack.var
+                   << " case=" << enum_name(entry.quality.propack.case_)
+                   << " number=" << enum_name(entry.quality.propack.number)
+                   << " gender=" << enum_name(entry.quality.propack.gender);
+                break;
+
+            case PartOfSpeech::ADJECTIVE:
+                os << "decl=" << +entry.quality.adjective.decl
+                   << " var=" << +entry.quality.adjective.var
+                   << " case=" << enum_name(entry.quality.adjective.case_)
+                   << " number=" << enum_name(entry.quality.adjective.number)
+                   << " gender=" << enum_name(entry.quality.adjective.gender)
+                   << " comparison=" << enum_name(entry.quality.adjective.param);
+                break;
+
+            case PartOfSpeech::NUMERAL:
+                os << "decl=" << +entry.quality.numeral.decl
+                   << " var=" << +entry.quality.numeral.var
+                   << " case=" << enum_name(entry.quality.numeral.case_)
+                   << " number=" << enum_name(entry.quality.numeral.number)
+                   << " sort=" << enum_name(entry.quality.numeral.sort);
+                break;
+
+            case PartOfSpeech::ADVERB:
+                os << "comparison=" << enum_name(entry.quality.adverb.param);
+                break;
+
+            case PartOfSpeech::VERB:
+                os << "decl=" << +entry.quality.verb.decl
+                   << " var=" << +entry.quality.verb.var
+                   << " tense=" << enum_name(entry.quality.verb.tvm.tense)
+                   << " voice=" << enum_name(entry.quality.verb.tvm.voice)
+                   << " mood=" << enum_name(entry.quality.verb.tvm.mood)
+                   << " person=" << +entry.quality.verb.person
+                   << " number=" << enum_name(entry.quality.verb.number);
+                break;
+
+            case PartOfSpeech::VPARTICIPLE:
+                os << "decl=" << +entry.quality.vpar.decl
+                   << " var=" << +entry.quality.vpar.var
+                   << " case=" << enum_name(entry.quality.vpar.case_)
+                   << " number=" << enum_name(entry.quality.vpar.number)
+                   << " gender=" << enum_name(entry.quality.vpar.gender)
+                   << " tense=" << enum_name(entry.quality.vpar.tvm.tense)
+                   << " voice=" << enum_name(entry.quality.vpar.tvm.voice)
+                   << " mood=" << enum_name(entry.quality.vpar.tvm.mood);
+                break;
+
+            case PartOfSpeech::SUPINE:
+                os << "decl=" << +entry.quality.supine.decl
+                   << " var=" << +entry.quality.supine.var
+                   << " case=" << enum_name(entry.quality.supine.case_)
+                   << " number=" << enum_name(entry.quality.supine.number)
+                   << " gender=" << enum_name(entry.quality.supine.gender);
+                break;
+
+            case PartOfSpeech::PREPOSITION:
+                os << "case=" << enum_name(entry.quality.preposition.case_);
+                break;
+
+            default:
+                break;
+        }
+
+        os << " stemKey=" << entry.stemKey
+           << " ending=\"" << entry.ending.ending << "\""
+           << " age=" << enum_name(entry.age)
+           << " freq=" << enum_name(entry.freq);
+
+        return os;
     }
 
 

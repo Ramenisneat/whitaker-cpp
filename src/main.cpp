@@ -17,6 +17,9 @@ int main(){
 
 
     loadDictionary(dictfileName, dictionary, stemList);
+
+    //TODO: gotta probably sort stems
+    //TODO: Bucket these by length probably. Good for now. 
     loadInflections(inflfileName, inflections);
 
     cout << "Loaded " << dictionary.size() << " entries" << endl;
