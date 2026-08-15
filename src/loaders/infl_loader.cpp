@@ -170,7 +170,7 @@ namespace words{
             // std::cout << line << std::endl;
 
             parseLine(line, infl);
-            std::cout << infl << std::endl;
+            // std::cout << infl << std::endl;
             inflections.push_back(infl);
 
         }
