@@ -308,7 +308,7 @@ namespace words{
     }
 
     std::ostream& operator<<(std::ostream& os, const StemRef& ref){
-        os << "\"" << ref.stem << "\" (idx=" << ref.idx << ", prin=" << ref.prin << ")";
+        os << "\"" << ref.stem << "\" (idx=" << ref.idx << ", prin=" << ref.key << ")";
         return os;
     }
 

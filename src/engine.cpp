@@ -18,11 +18,84 @@ namespace words{
     }
 
 
-    bool is_consistent(const DictEntry &entry, const InflEntry &infl){
-        if (infl.pos != entry.pos) return false;
+    bool is_consistent(const DictEntry &entry, const InflEntry &infl, const StemRef &stem){
+        // if (infl.pos != entry.pos) return false;
         // if (infl. != dict.which) return false;
 
-        return true;
+        /* My own scratch notes from og
+         function "<=" (Left, Right : Stem_Key_Type)   return Boolean is
+         begin
+            if Right = Left or else Right = 0 then
+               return True;
+            else
+               return False;
+            end if;
+         end "<=";
+
+
+         ((Pdl_Key <= Sl (I).IR.Key))  or else
+                    ((Pdl_Key = 0)  and then
+                    (X and then
+                    Y)
+                     )  and then   --  and KEY
+                    (Pdl_Part.Pofs  = Eff_Part (Sl (I).IR.Qual.Pofs))
+        */
+
+
+        //The parse record/scratch record is being built here. gonna just return all parts and construct at display time. 
+        if ((stem.key == infl.stemKey || infl.stemKey == 0) || 
+            (stem.key == 0 && (entry.pos == PartOfSpeech::NOUN || entry.pos == PartOfSpeech::ADJECTIVE || entry.pos == PartOfSpeech::VERB) && (infl.stemKey == 1 || infl.stemKey == 2))
+        ){
+            if (entry.pos == infl.pos || (entry.pos == PartOfSpeech::VERB && (infl.pos == PartOfSpeech::VPARTICIPLE || infl.pos == PartOfSpeech::SUPINE))){
+                switch (entry.pos)
+                {
+                case PartOfSpeech::NOUN:
+                    return cmp_decn(entry.type.noun.decl, entry.type.noun.var, infl.quality.noun.decl, infl.quality.noun.var) && 
+                        cmp_gender(entry.type.noun.gender, infl.quality.noun.gender);
+                
+                case PartOfSpeech::PRONOUN:
+                    return cmp_decn(entry.type.pronoun.decl, entry.type.pronoun.var, infl.quality.pronoun.decl, infl.quality.pronoun.var);
+                    
+                case PartOfSpeech::ADJECTIVE:
+                    return cmp_decn(entry.type.adjective.decl, entry.type.adjective.var, infl.quality.adjective.decl, infl.quality.adjective.var) && 
+                        ((infl.quality.adjective.param == entry.type.adjective.param || entry.type.adjective.param == Comparison::UNKNOWN) ||
+                         infl.quality.adjective.param == Comparison::UNKNOWN ||
+                         entry.type.adjective.param == Comparison::UNKNOWN
+                        );
+                
+                case PartOfSpeech::NUMERAL:
+                    return cmp_decn(entry.type.numeral.decl, entry.type.numeral.var, infl.quality.numeral.decl, infl.quality.numeral.var) &&
+                        stem.key == infl.stemKey;
+                
+                case PartOfSpeech::ADVERB:
+                    return (infl.quality.adjective.param == entry.type.adjective.param || infl.quality.adjective.param == Comparison::UNKNOWN) ||
+                         infl.quality.adjective.param == Comparison::UNKNOWN ||
+                         entry.type.adjective.param == Comparison::UNKNOWN;
+
+                case PartOfSpeech::VERB:
+                    if (infl.pos == PartOfSpeech::VERB)
+                        cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.verb.decl, infl.quality.verb.var);
+                    else if (infl.pos == PartOfSpeech::VPARTICIPLE)
+                        cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.vpar.decl, infl.quality.vpar.var);
+                    else if (infl.pos == PartOfSpeech::SUPINE)
+                        cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.supine.decl, infl.quality.supine.var);
+                    return false; //Should I error check?
+                
+                case PartOfSpeech::PREPOSITION:
+                    return entry.type.preposition.case_ == infl.quality.preposition.case_;
+                
+                case PartOfSpeech::INTERJECTION:
+                case PartOfSpeech::CONJUNCTION:
+                    return true;
+
+                    
+                default:
+                    std::cerr << "NOT REACHABLE. POS not used" << std::endl;
+                }
+            }  
+        }
+
+        return false;
     }
 
     std::vector<Candidate> run_inflections(const std::vector<DictEntry> dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view &line){
@@ -37,8 +110,10 @@ namespace words{
             // std::cout << stem << " + " << ending << std::endl; 
 
             auto [lo, hi] = find_stems(stems, stem);
-            // for (auto it = lo; it != hi; ++it) 
-            //    
+            
+            for (auto it = lo; it != hi; ++it)
+                // std::cout << "stems: " << it->stem << std::endl;
+               
 
             for (auto it = lo; it != hi; ++it) {
                
@@ -46,10 +121,10 @@ namespace words{
                 //There is a max_stem_size. Should incorporate
                 DictEntry dict = dictionary[it->idx];
                 for (const auto &i : inflections){
-                    if (i.ending.ending == it->stem){
+                    if (i.ending.ending == ending){
                         // std::cout << it->stem << " + " << ending << std::endl; 
-                        if (is_consistent(dict, i))
-                            candidates.push_back((Candidate){.stem = it->stem, .inflection = i});
+                        if (is_consistent(dict, i, *it))
+                            candidates.push_back((Candidate){.stem = it->stem, .inflection = i, .entry = dict});
                     }
                 }
 
@@ -61,10 +136,24 @@ namespace words{
     }
 
     //Maybe bundle params into a "corpus"
-    void parse_latin(const std::vector<DictEntry> &dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view line){
+    std::vector<Candidate> parse_latin(const std::vector<DictEntry> &dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view line){
 
         std::vector<Candidate> candidates = run_inflections(dictionary, inflections, stems, line);
 
         std::cout << "size of candidates: " << candidates.size() << std::endl;
+
+        return candidates;
+    }
+
+
+    void printCandidates(std::ostream& os, const std::vector<Candidate>& candidates){
+        for (size_t i = 0; i < candidates.size(); ++i){
+            os << "[" << i << "] " << candidates[i] << "\n";
+        }
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Candidate& candidate){
+        os << candidate.entry << candidate.inflection << candidate.stem << std::endl;
+        return os;
     }
 }

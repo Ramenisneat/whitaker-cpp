@@ -109,7 +109,7 @@ struct DictEntry{
 struct StemRef{
     std::string stem;
     size_t idx;
-    size_t prin;
+    size_t key;
 
 };
 
@@ -247,5 +247,6 @@ std::ostream& operator<<(std::ostream& os, const StemRef& ref);
 
 void printDictionary(std::ostream& os, const std::vector<DictEntry>& entries);
 void printStemList(std::ostream& os, const std::vector<StemRef>& stemList);
+void printInflection(std::ostream& os, const std::vector<InflEntry>& inflections);
 
 }

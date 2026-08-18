@@ -277,5 +277,10 @@ namespace words{
         return os;
     }
 
+    void printInflection(std::ostream& os, const std::vector<InflEntry>& inflections){
+        for (size_t i = 0; i < inflections.size(); ++i){
+            os << "[" << i << "] " << inflections[i] << "\n";
+        }
+    }
 
 }

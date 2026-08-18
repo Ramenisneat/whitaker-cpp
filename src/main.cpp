@@ -28,15 +28,28 @@ int main(){
     //TODO: Bucket these by length probably. Good for now. 
     loadInflections(inflfileName, inflections);
 
-    cout << "Loaded " << dictionary.size() << " entries" << endl;
-    cout << "Built " << stemList.size() << " stem refs" << endl;
-    cout << "Loaded " << inflections.size() << " inflection refs" << endl;
+    std::cout << "Loaded " << dictionary.size() << " entries" << endl;
+    std::cout << "Built " << stemList.size() << " stem refs" << endl;
+    std::cout << "Loaded " << inflections.size() << " inflection refs" << endl;
 
+    // printInflection(cout, inflections);
+    std::vector<Candidate> candidates = parse_latin(dictionary, inflections, stemList, "pax");
+    printCandidates(cout, candidates);
 
+    // std::string input;
+    // std::cout << "whitakers words test:" << std::endl;
 
-    //should normalize
-    parse_latin(dictionary, inflections, stemList, "amos");
+    // while (true){
+    //     std::cout << "> ";
 
+    //     if (!std::getline(std::cin, input)) {
+    //         break; 
+    //     }
+    //     //should normalize
+    //     std::vector<Candidate> candidates = parse_latin(dictionary, inflections, stemList, input);
+
+    //     printCandidates(cout, candidates);
+    // }
 
     // printDictionary(cout, dictionary);
     // printStemList(cout, stemList);
