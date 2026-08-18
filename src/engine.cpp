@@ -110,14 +110,8 @@ namespace words{
             // std::cout << stem << " + " << ending << std::endl; 
 
             auto [lo, hi] = find_stems(stems, stem);
-            
-            for (auto it = lo; it != hi; ++it)
-                // std::cout << "stems: " << it->stem << std::endl;
-               
 
             for (auto it = lo; it != hi; ++it) {
-               
-                // std::cout << "stems: " << it->stem << std::endl;
                 //There is a max_stem_size. Should incorporate
                 DictEntry dict = dictionary[it->idx];
                 for (const auto &i : inflections){
@@ -153,7 +147,7 @@ namespace words{
     }
 
     std::ostream& operator<<(std::ostream& os, const Candidate& candidate){
-        os << candidate.entry << candidate.inflection << candidate.stem << std::endl;
+        os << "dict: " << candidate.entry << std::endl << "infl: " << candidate.inflection << std::endl << "stem" << candidate.stem << std::endl;
         return os;
     }
 }

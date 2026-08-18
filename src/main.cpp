@@ -32,8 +32,8 @@ int main(){
     std::cout << "Built " << stemList.size() << " stem refs" << endl;
     std::cout << "Loaded " << inflections.size() << " inflection refs" << endl;
 
-    // printInflection(cout, inflections);
-    std::vector<Candidate> candidates = parse_latin(dictionary, inflections, stemList, "pax");
+    // printInflections(cout, inflections);
+    std::vector<Candidate> candidates = parse_latin(dictionary, inflections, stemList, "femina");
     printCandidates(cout, candidates);
 
     // std::string input;

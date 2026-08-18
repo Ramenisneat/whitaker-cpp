@@ -13,14 +13,7 @@ namespace words{
 
     };
 
-    struct Candidate{
-        //void for now
-
-        StemRef stem;
-        InflEntry inflection;
-        DictEntry entry;
-    };
-
+    
     inline bool cmp_gender (Gender a, Gender b){
         return (a == b || (b == Gender::COMMON && a != Gender::NEUTER) || b == Gender::UNKNOWN);
     }
@@ -38,8 +31,7 @@ namespace words{
         return false;
     }
 
-    std::ostream& operator<<(std::ostream& os, const Candidate& candidate);
-    void printCandidates(std::ostream& os, const std::vector<Candidate>& candidates);
+    
     
     std::vector<Candidate> parse_latin(const std::vector<DictEntry> &dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view line);
 }

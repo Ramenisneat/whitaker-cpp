@@ -241,12 +241,20 @@ struct InflEntry{
 
 };
 
+struct Candidate{
+    StemRef stem;
+    InflEntry inflection;
+    DictEntry entry;
+};
+
+
 std::ostream& operator<<(std::ostream& os, const DictEntry& entry);
 std::ostream& operator<<(std::ostream& os, const InflEntry& entry);
 std::ostream& operator<<(std::ostream& os, const StemRef& ref);
+std::ostream& operator<<(std::ostream& os, const Candidate& candidate);
 
 void printDictionary(std::ostream& os, const std::vector<DictEntry>& entries);
 void printStemList(std::ostream& os, const std::vector<StemRef>& stemList);
-void printInflection(std::ostream& os, const std::vector<InflEntry>& inflections);
-
+void printInflections(std::ostream& os, const std::vector<InflEntry>& inflections);
+void printCandidates(std::ostream& os, const std::vector<Candidate>& candidates);
 }
