@@ -1,4 +1,5 @@
 #include <whitaker/engine.hpp>
+#include <whitaker/utils.hpp>
 #include <algorithm>
 #include <iostream>
 
@@ -98,8 +99,7 @@ namespace words{
         return false;
     }
 
-    std::vector<Candidate> run_inflections(const std::vector<DictEntry> dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view &line){
-        std::vector<Candidate> candidates;
+    void run_inflections(const Corpus& corpus, std::string_view &line, std::vector<Candidate> &candidates){
 
         size_t max_len = std::min(MAX_INFLECTION_SIZE, line.size());
         for (size_t k = 0; k <= max_len; ++k){
@@ -109,12 +109,12 @@ namespace words{
 
             // std::cout << stem << " + " << ending << std::endl; 
 
-            auto [lo, hi] = find_stems(stems, stem);
+            auto [lo, hi] = find_stems(corpus.stemlist, stem);
 
             for (auto it = lo; it != hi; ++it) {
                 //There is a max_stem_size. Should incorporate
-                DictEntry dict = dictionary[it->idx];
-                for (const auto &i : inflections){
+                DictEntry dict = corpus.dictionary[it->idx];
+                for (const auto &i : corpus.inflections){
                     if (i.ending.ending == ending){
                         // std::cout << it->stem << " + " << ending << std::endl; 
                         if (is_consistent(dict, i, *it))
@@ -126,13 +126,28 @@ namespace words{
 
             
         }
-        return candidates;
+    }
+
+
+    void try_uniques(const Corpus &corpus, std::string_view &line, std::vector<Candidate> &candidates){
+        
+        for (auto &unique : corpus.uniques){
+            if (line == unique.stem){
+                candidates.push_back((Candidate){.unique = unique});
+            }
+        }
+
+
     }
 
     //Maybe bundle params into a "corpus"
-    std::vector<Candidate> parse_latin(const std::vector<DictEntry> &dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view line){
+    std::vector<Candidate> parse_latin(const Corpus &corpus, std::string_view line){
 
-        std::vector<Candidate> candidates = run_inflections(dictionary, inflections, stems, line);
+        std::vector<Candidate> candidates;
+        line = trim(line);
+        
+        try_uniques(corpus, line, candidates);
+        run_inflections(corpus, line, candidates);
 
         std::cout << "size of candidates: " << candidates.size() << std::endl;
 
@@ -147,7 +162,7 @@ namespace words{
     }
 
     std::ostream& operator<<(std::ostream& os, const Candidate& candidate){
-        os << "dict: " << candidate.entry << std::endl << "infl: " << candidate.inflection << std::endl << "stem" << candidate.stem << std::endl;
+        os << "dict: " << candidate.entry << std::endl << "infl: " << candidate.inflection << std::endl << "stem: " << candidate.stem << std::endl << "unq: " << candidate.unique << std::endl;
         return os;
     }
 }

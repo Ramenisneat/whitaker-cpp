@@ -8,6 +8,7 @@ add_executable(whitaker
     src/main.cpp
     src/loaders/dict_loader.cpp
     src/loaders/infl_loader.cpp
+    src/loaders/unique_loader.cpp
     src/engine.cpp
 
 )

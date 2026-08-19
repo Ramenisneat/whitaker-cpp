@@ -33,5 +33,5 @@ namespace words{
 
     
     
-    std::vector<Candidate> parse_latin(const std::vector<DictEntry> &dictionary, const std::vector<InflEntry> &inflections, const std::vector<StemRef> &stems, std::string_view line);
+    std::vector<Candidate> parse_latin(const Corpus &corpus, std::string_view line);
 }

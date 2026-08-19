@@ -11,29 +11,38 @@ using namespace words;
 
 int main(){
 
-    vector<DictEntry> dictionary = {};
-    vector<StemRef> stemList = {};
-    vector<InflEntry> inflections = {};
+    // vector<DictEntry> dictionary = {};
+    // vector<StemRef> stemList = {};
+    // vector<InflEntry> inflections = {};
+    // vector<UniqueEntry> uniques = {};
+    Corpus corpus;
     string dictfileName = "data/DICTLINE.GEN";
     string inflfileName = "data/INFLECTS.LAT";
+    string unqfileName = "data/UNIQUES.LAT";
 
 
-    loadDictionary(dictfileName, dictionary, stemList);
 
-    std::sort(stemList.begin(), stemList.end(), [](const StemRef &a, const StemRef &b){
+    loadDictionary(dictfileName, corpus.dictionary, corpus.stemlist);
+
+    std::sort(corpus.stemlist.begin(), corpus.stemlist.end(), [](const StemRef &a, const StemRef &b){
         return a.stem < b.stem;
 
     });
 
     //TODO: Bucket these by length probably. Good for now. 
-    loadInflections(inflfileName, inflections);
+    loadInflections(inflfileName, corpus.inflections);
 
-    std::cout << "Loaded " << dictionary.size() << " entries" << endl;
-    std::cout << "Built " << stemList.size() << " stem refs" << endl;
-    std::cout << "Loaded " << inflections.size() << " inflection refs" << endl;
+
+    loadUniques(unqfileName, corpus.uniques);
+    // printUniques(cout, uniques);
+
+
+    std::cout << "Loaded " << corpus.dictionary.size() << " entries" << endl;
+    std::cout << "Built " << corpus.stemlist.size() << " stem refs" << endl;
+    std::cout << "Loaded " << corpus.inflections.size() << " inflection refs" << endl;
 
     // printInflections(cout, inflections);
-    std::vector<Candidate> candidates = parse_latin(dictionary, inflections, stemList, "femina");
+    std::vector<Candidate> candidates = parse_latin(corpus, "viden");
     printCandidates(cout, candidates);
 
     // std::string input;

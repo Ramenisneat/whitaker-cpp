@@ -241,20 +241,77 @@ struct InflEntry{
 
 };
 
+struct UniqueEntry{
+    std::string stem;
+    PartOfSpeech pos = PartOfSpeech::UNKNOWN;
+
+     union Quality {
+        NounRecord noun;
+        PronounRecord pronoun;
+        // PropackRecord propack;
+        AdjectiveRecord adjective;
+        // NumeralRecord numeral;
+        // AdverbRecord adverb;
+        VerbRecord verb;
+        std::uint8_t raw;
+        constexpr Quality() : raw(0) {}
+    };
+
+    Quality quality{};
+
+
+    // Not super elegant
+    union Kind {
+        NounKind noun;
+        PronounKind pronoun;
+        VerbKind verb;
+        std::uint8_t raw;
+        constexpr Kind() : raw(0) {}
+    };
+
+    Kind kind{};
+
+    struct Flags {
+        Age age = Age::UNKNOWN;
+        Area area = Area::UNKNOWN;
+        Geography geo = Geography::UNKNOWN;
+        Frequency freq = Frequency::UNKNOWN;
+        Source source = Source::UNKNOWN;
+    } flags;
+
+    std::string meaning;
+
+
+};
+
 struct Candidate{
     StemRef stem;
     InflEntry inflection;
     DictEntry entry;
+
+    //TODO: This is getting dumb again
+    UniqueEntry unique;
 };
 
+
+struct Corpus {
+    std::vector<DictEntry> dictionary = {};
+    std::vector<InflEntry> inflections = {};
+    std::vector<StemRef> stemlist = {};
+    std::vector<UniqueEntry> uniques = {};
+};
 
 std::ostream& operator<<(std::ostream& os, const DictEntry& entry);
 std::ostream& operator<<(std::ostream& os, const InflEntry& entry);
 std::ostream& operator<<(std::ostream& os, const StemRef& ref);
 std::ostream& operator<<(std::ostream& os, const Candidate& candidate);
+std::ostream& operator<<(std::ostream& os, const UniqueEntry& unique);
+
 
 void printDictionary(std::ostream& os, const std::vector<DictEntry>& entries);
 void printStemList(std::ostream& os, const std::vector<StemRef>& stemList);
 void printInflections(std::ostream& os, const std::vector<InflEntry>& inflections);
 void printCandidates(std::ostream& os, const std::vector<Candidate>& candidates);
+void printUniques(std::ostream& os, const std::vector<UniqueEntry>& uniques);
+
 }
