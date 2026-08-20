@@ -7,6 +7,9 @@
 
 namespace words{
 
+    constexpr size_t MAX_INFLECTION_SIZE = 7;
+
+
     struct StemRange{
         const StemRef *begin;
         const StemRef *end;

@@ -4,7 +4,6 @@
 #include <iostream>
 
 namespace words{
-    size_t MAX_INFLECTION_SIZE = 7;
 
 
     StemRange find_stems(const std::vector<StemRef> &stems, std::string_view target){
@@ -14,7 +13,8 @@ namespace words{
         auto lo = std::lower_bound(stems.begin(), stems.end(), target, cmp_lo);
         auto hi = std::upper_bound(stems.begin(), stems.end(), target, cmp_hi);
 
-        return {&*lo, &*hi};
+        return {stems.data() + (lo - stems.begin()),
+                stems.data() + (hi - stems.begin())};
 
     }
 
@@ -69,17 +69,17 @@ namespace words{
                         stem.key == infl.stemKey;
                 
                 case PartOfSpeech::ADVERB:
-                    return (infl.quality.adjective.param == entry.type.adjective.param || infl.quality.adjective.param == Comparison::UNKNOWN) ||
-                         infl.quality.adjective.param == Comparison::UNKNOWN ||
-                         entry.type.adjective.param == Comparison::UNKNOWN;
+                    return (infl.quality.adverb.param == entry.type.adverb.param || infl.quality.adverb.param == Comparison::UNKNOWN) ||
+                         infl.quality.adverb.param == Comparison::UNKNOWN ||
+                         entry.type.adverb.param == Comparison::UNKNOWN;
 
                 case PartOfSpeech::VERB:
                     if (infl.pos == PartOfSpeech::VERB)
-                        cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.verb.decl, infl.quality.verb.var);
+                        return cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.verb.decl, infl.quality.verb.var);
                     else if (infl.pos == PartOfSpeech::VPARTICIPLE)
-                        cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.vpar.decl, infl.quality.vpar.var);
+                        return cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.vpar.decl, infl.quality.vpar.var);
                     else if (infl.pos == PartOfSpeech::SUPINE)
-                        cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.supine.decl, infl.quality.supine.var);
+                        return cmp_decn(entry.type.verb.decl, entry.type.verb.var, infl.quality.supine.decl, infl.quality.supine.var);
                     return false; //Should I error check?
                 
                 case PartOfSpeech::PREPOSITION:
@@ -111,9 +111,10 @@ namespace words{
 
             auto [lo, hi] = find_stems(corpus.stemlist, stem);
 
+            //Might want to switch nested loop order: inflections then stems
             for (auto it = lo; it != hi; ++it) {
                 //There is a max_stem_size. Should incorporate
-                DictEntry dict = corpus.dictionary[it->idx];
+                const DictEntry &dict = corpus.dictionary[it->idx];
                 for (const auto &i : corpus.inflections){
                     if (i.ending.ending == ending){
                         // std::cout << it->stem << " + " << ending << std::endl; 
@@ -144,6 +145,8 @@ namespace words{
     std::vector<Candidate> parse_latin(const Corpus &corpus, std::string_view line){
 
         std::vector<Candidate> candidates;
+
+        //Need to normalize for u and v (QVAE kludge)
         line = trim(line);
         
         try_uniques(corpus, line, candidates);

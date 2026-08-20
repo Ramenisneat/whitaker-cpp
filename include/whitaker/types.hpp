@@ -294,11 +294,58 @@ struct Candidate{
 };
 
 
+union Target {
+    NounEntry noun;
+    PronounEntry pronoun;
+    PropackEntry propack;
+    AdjectiveEntry adjective;
+    NumeralEntry numeral;
+    AdverbEntry adverb;
+    VerbEntry verb;
+    std::uint8_t raw;
+    constexpr Target() : raw(0) {}
+};
+
+struct TackonItem{
+    PartOfSpeech pos = PartOfSpeech::UNKNOWN;
+    std::string tack;
+    struct entry{
+        Target base{};
+    } entry;
+};
+
+struct PrefixItem{
+    PartOfSpeech pos = PartOfSpeech::UNKNOWN;
+    std::string fix;
+    char connect = ' ';
+    struct entry{
+        PartOfSpeech root = PartOfSpeech::UNKNOWN;
+        PartOfSpeech target = PartOfSpeech::UNKNOWN;
+    } entry;
+};
+
+struct SuffixItem{
+    PartOfSpeech pos = PartOfSpeech::UNKNOWN;
+    std::string fix;
+    char connect = ' ';
+    struct entry{
+        PartOfSpeech root = PartOfSpeech::UNKNOWN;
+        size_t root_key = 0;
+        Target Target{};
+        size_t target_key = 0;
+    } entry;
+};
+
 struct Corpus {
     std::vector<DictEntry> dictionary = {};
     std::vector<InflEntry> inflections = {};
     std::vector<StemRef> stemlist = {};
     std::vector<UniqueEntry> uniques = {};
+    std::vector<PrefixItem> prefixes = {};
+    std::vector<PrefixItem> tickons = {};
+    std::vector<SuffixItem> suffixes = {};
+    std::vector<TackonItem> tackons = {};
+
 };
 
 std::ostream& operator<<(std::ostream& os, const DictEntry& entry);

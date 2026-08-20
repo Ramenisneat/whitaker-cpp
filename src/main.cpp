@@ -19,6 +19,8 @@ int main(){
     string dictfileName = "data/DICTLINE.GEN";
     string inflfileName = "data/INFLECTS.LAT";
     string unqfileName = "data/UNIQUES.LAT";
+    string addonsfileName = "data/ADDONS.LAT";
+
 
 
 
@@ -36,13 +38,15 @@ int main(){
     loadUniques(unqfileName, corpus.uniques);
     // printUniques(cout, uniques);
 
+    loadAddons(addonsfileName);
+
 
     std::cout << "Loaded " << corpus.dictionary.size() << " entries" << endl;
     std::cout << "Built " << corpus.stemlist.size() << " stem refs" << endl;
     std::cout << "Loaded " << corpus.inflections.size() << " inflection refs" << endl;
 
     // printInflections(cout, inflections);
-    std::vector<Candidate> candidates = parse_latin(corpus, "viden");
+    std::vector<Candidate> candidates = parse_latin(corpus, "vates");
     printCandidates(cout, candidates);
 
     // std::string input;

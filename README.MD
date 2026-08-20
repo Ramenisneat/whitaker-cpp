@@ -8,11 +8,13 @@ The purpose of this implementation is to have it run in an embedded context, pri
 TODO WILL FLUSH OUT. 
 
 ## TODO
-- implement data loaders, structs and enums for all word types and data structures.
-- implement basic parsing with wordDict and inflections
-- implement prefixes, suffixes, enclitics analysis
-- implement tricks
-- quick CLI
-- optimizations
-- tests? probably not ehh
-- port for use on esp
+- Roman Numerals
+- enclitics
+- Change "Propack" to "Packon"
+- Output formatting
+- Try_tackons
+- Syncope
+- Tricks
+- Fixes
+
+- Esp port
